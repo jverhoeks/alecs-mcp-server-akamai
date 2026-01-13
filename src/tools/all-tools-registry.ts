@@ -112,9 +112,7 @@ import {
 
 // DNS Elicitation Tools
 import {
-  dnsElicitationTool,
   handleDNSElicitationTool,
-  secureHostnameOnboardingTool,
   handleSecureHostnameOnboardingTool,
 } from './elicitation';
 

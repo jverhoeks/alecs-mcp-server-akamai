@@ -102,7 +102,6 @@ interface ToolDefinition {
 class PerformanceServer {
   private server: Server;
   private client: AkamaiClient;
-  private configManager: CustomerConfigManager;
   private tools: Map<string, ToolDefinition> = new Map();
 
   constructor() {
@@ -119,8 +118,7 @@ class PerformanceServer {
     );
 
     this.client = new AkamaiClient();
-    this.configManager = CustomerConfigManager.getInstance();
-    
+
     this.registerTools();
     this.setupHandlers();
     
@@ -267,7 +265,7 @@ class PerformanceServer {
           value: z.any(),
         })),
       }),
-      handler: async (client, params) => {
+      handler: async () => {
         // This would simulate the impact of changes
         return {
           content: [{
@@ -348,7 +346,7 @@ class PerformanceServer {
     });
   }
 
-  private zodToJsonSchema(schema: z.ZodSchema): any {
+  private zodToJsonSchema(_schema: z.ZodSchema): any {
     // Simplified schema conversion
     return {
       type: 'object',

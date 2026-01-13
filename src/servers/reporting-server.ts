@@ -37,12 +37,8 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import { AkamaiClient } from '../akamai-client';
-import { CustomerConfigManager } from '../utils/customer-config';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-
-// Initialize services
-const configManager = CustomerConfigManager.getInstance();
 
 // =============================================================================
 // SCHEMA DEFINITIONS FOR REPORTING
@@ -63,15 +59,6 @@ const trafficReportSchema = dateRangeSchema.extend({
     .optional()
     .default(['edge_hits', 'edge_bandwidth'])
     .describe('Traffic metrics to include'),
-});
-
-const performanceReportSchema = dateRangeSchema.extend({
-  metrics: z.array(z.enum(['response_time', 'error_rate', 'availability', 'throughput']))
-    .optional()
-    .default(['response_time', 'error_rate'])
-    .describe('Performance metrics to include'),
-  percentiles: z.array(z.number()).optional().default([50, 95, 99]).describe('Response time percentiles'),
-  group_by: z.enum(['cpcode', 'hostname']).optional().describe('Group by dimension'),
 });
 
 const cacheReportSchema = dateRangeSchema.extend({
@@ -140,11 +127,11 @@ const getTrafficReport = {
     }
 
     // Use correct Akamai Reporting API endpoint
-    const response = await client.request({
+    const response = (await client.request({
       path: '/reporting-api/v1/reports/traffic/edge-hits-by-time',
       method: 'GET',
       queryParams: params,
-    });
+    })) as any;
 
     // Format response for human readability
     let text = `# Traffic Report\n\n`;
@@ -241,11 +228,11 @@ const getCachePerformance = {
     }
 
     // Use correct endpoint for cache performance
-    const response = await client.request({
+    const response = (await client.request({
       path: '/reporting-api/v1/reports/caching/cacheable-responses',
       method: 'GET',
       queryParams: params,
-    });
+    })) as any;
 
     let text = `# Cache Performance Report\n\n`;
     text += `**Period:** ${validated.start_date} to ${validated.end_date}\n`;
@@ -348,11 +335,11 @@ const getGeographicDistribution = {
       limit: validated.top_n,
     };
 
-    const response = await client.request({
+    const response = (await client.request({
       path: '/reporting-api/v1/reports/geography/traffic-by-geography',
       method: 'GET',
       queryParams: params,
-    });
+    })) as any;
 
     let text = `# Geographic Distribution Report\n\n`;
     text += `**Period:** ${validated.start_date} to ${validated.end_date}\n`;
@@ -443,11 +430,11 @@ const getErrorAnalysis = {
       params.httpStatusCodes = validated.error_codes.join(',');
     }
 
-    const response = await client.request({
+    const response = (await client.request({
       path: '/reporting-api/v1/reports/performance/http-status-codes-by-time',
       method: 'GET',
       queryParams: params,
-    });
+    })) as any;
 
     let text = `# Error Analysis Report\n\n`;
     text += `**Period:** ${validated.start_date} to ${validated.end_date}\n`;

@@ -119,7 +119,6 @@ interface ToolDefinition {
 class NetworkListsServer {
   private server: Server;
   private client: AkamaiClient;
-  private configManager: CustomerConfigManager; // TODO: Implement usage
   private tools: Map<string, ToolDefinition> = new Map();
 
   constructor() {
@@ -136,8 +135,7 @@ class NetworkListsServer {
     );
 
     this.client = new AkamaiClient();
-    this.configManager = CustomerConfigManager.getInstance();
-    
+
     this.registerTools();
     this.setupHandlers();
     
@@ -406,7 +404,7 @@ class NetworkListsServer {
     });
   }
 
-  private zodToJsonSchema(schema: z.ZodSchema): any {
+  private zodToJsonSchema(_schema: z.ZodSchema): any {
     // Simplified schema conversion
     return {
       type: 'object',

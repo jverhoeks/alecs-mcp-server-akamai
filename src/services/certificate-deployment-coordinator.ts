@@ -6,11 +6,9 @@
 import { EventEmitter } from 'events';
 
 import { type AkamaiClient } from '../akamai-client';
-import { 
+import {
   DeploymentListResponse,
   DeploymentDetailResponse,
-  Deployment,
-  DeploymentStatus as ApiDeploymentStatus,
   EnrollmentDetailResponse,
   PropertyDetailResponse,
   PropertyHostnamesResponse
@@ -279,7 +277,7 @@ export class CertificateDeploymentCoordinator extends EventEmitter {
 
     // Check if all domains are validated
     const allValidated = response.enrollment.sans?.every(
-      (san: string) => true, // In real implementation, would check validation status
+      () => true, // In real implementation, would check validation status
     );
 
     if (!allValidated) {

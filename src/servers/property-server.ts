@@ -975,7 +975,7 @@ class PropertyALECSServer2025 {
             }
             const cloneArgs: Parameters<typeof cloneProperty>[1] = {
               sourcePropertyId: args['sourcePropertyId'] as string,
-              newPropertyName: args['propertyName'] as string,
+              propertyName: args['propertyName'] as string,
               ...('customer' in args && { customer: args['customer'] as string }),
               ...('contractId' in args && { contractId: args['contractId'] as string }),
               ...('groupId' in args && { groupId: args['groupId'] as string }),
