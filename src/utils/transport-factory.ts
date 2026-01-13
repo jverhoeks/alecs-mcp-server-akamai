@@ -12,20 +12,15 @@ import { TransportConfig, getTransportFromEnv } from '../config/transport-config
 let express: any;
 let WebSocketServerTransport: any;
 let SSEServerTransport: any;
-// WebSocketServer and createHttpServer are available but loaded dynamically
 
 async function loadOptionalDependencies() {
   try {
     express = (await import('express')).default;
-    const ws = await import('ws');
-    WebSocketServer = ws.WebSocketServer;
-    const http = await import('http');
-    createHttpServer = http.createServer;
-    
+
     // Load custom transports
     const sseModule = await import('../transport/sse-transport');
     SSEServerTransport = sseModule.SSEServerTransport;
-    
+
     const wsModule = await import('../transport/websocket-transport');
     WebSocketServerTransport = wsModule.WebSocketServerTransport;
   } catch (error) {
@@ -43,11 +38,11 @@ export async function createTransport(config: TransportConfig): Promise<any> {
       if (!WebSocketServerTransport) {
         throw new Error('[ERROR] WebSocket transport requires ws. Install with: npm install ws');
       }
-      
+
       const wsPort = config.options.port || 8080;
       const wsHost = config.options.host || '0.0.0.0';
       const wsPath = config.options.path || '/mcp';
-      
+
       const wsTransport = new WebSocketServerTransport({
         port: wsPort,
         host: wsHost,
@@ -61,9 +56,8 @@ export async function createTransport(config: TransportConfig): Promise<any> {
           tokenHeader: 'authorization'
         }
       });
-      
-      await wsTransport.start();
-      
+
+      // Transport start() will be called by server.connect()
       return wsTransport;
       
     case 'sse':
@@ -71,25 +65,22 @@ export async function createTransport(config: TransportConfig): Promise<any> {
       if (!express || !SSEServerTransport) {
         throw new Error('[ERROR] SSE transport requires express. Install with: npm install express');
       }
-      
-      const sseApp = express();
-      const sseTransport = new SSEServerTransport();
-      const ssePath = config.options.path || '/mcp/sse';
-      
-      sseApp.use(ssePath, sseTransport.router);
-      
-      await sseTransport.start();
-      
+
       const ssePort = config.options.port || 3001;
       const sseHost = config.options.host || '0.0.0.0';
-      
-      sseApp.listen(ssePort, sseHost, () => {
-        console.log(`[DONE] SSE server listening on http://${sseHost}:${ssePort}${ssePath}`);
-        if (config.options.cors) {
-          console.log('[INFO] CORS enabled for SSE transport');
-        }
+      const ssePath = config.options.path || '/mcp/sse';
+
+      const sseTransport = new SSEServerTransport({
+        port: ssePort,
+        host: sseHost,
+        path: ssePath,
+        ssl: config.options.ssl ? {
+          cert: process.env['ALECS_SSL_CERT']!,
+          key: process.env['ALECS_SSL_KEY']!
+        } : undefined
       });
-      
+
+      // Transport start() will be called by server.connect()
       return sseTransport;
       
     default:

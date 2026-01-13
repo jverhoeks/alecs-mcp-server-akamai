@@ -33,7 +33,6 @@
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -43,6 +42,7 @@ import {
 
 import { logger } from './logger';
 import { getTransportFromEnv } from '../config/transport-config';
+import { createTransport } from './transport-factory';
 
 interface ServerConfig {
   name: string;
@@ -116,14 +116,9 @@ export class ModularServer {
 
   async start(): Promise<void> {
     const transportConfig = getTransportFromEnv();
-    
-    if (transportConfig.type === 'stdio') {
-      const transport = new StdioServerTransport();
-      await this.server.connect(transport);
-      logger.info('Modular MCP Server started with stdio transport');
-    } else {
-      throw new Error(`Transport type ${transportConfig.type} not supported in modular mode yet`);
-    }
+    const transport = await createTransport(transportConfig);
+    await this.server.connect(transport);
+    logger.info(`Modular MCP Server started with ${transportConfig.type} transport`);
   }
 
   getServer(): Server {
